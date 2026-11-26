@@ -160,8 +160,23 @@
       </div>
 
       <div class="field">
-        <label for="comment">Коментар / причина отримання <span class="req">*</span></label>
-        <textarea id="comment" placeholder="Вкажіть причину або додаткову інформацію" required></textarea>
+        <label for="reason">Причина отримання <span class="req">*</span></label>
+        <select id="reason" required onchange="toggleInjuryDate()">
+          <option value="" disabled selected>Оберіть причину</option>
+          <option value="Поранення (ВЛК)">Поранення (ВЛК)</option>
+          <option value="За місцем вимоги (ЦНАП)">За місцем вимоги (ЦНАП)</option>
+          <option value="Інше">Інше</option>
+        </select>
+      </div>
+
+      <div class="field" id="injuryDateField" style="display: none;">
+        <label for="injuryDate">Дата поранення <span class="req">*</span></label>
+        <input type="date" id="injuryDate">
+      </div>
+
+      <div class="field">
+        <label for="comment">Коментар <span class="req">*</span></label>
+        <textarea id="comment" placeholder="Додаткова інформація (якщо немає — поставте прочерк)" required></textarea>
       </div>
 
       <div class="field">
@@ -177,6 +192,21 @@
 
   <script>
     const PHONE = "380733777398";
+
+    function toggleInjuryDate() {
+      const reason = document.getElementById("reason").value;
+      const injuryField = document.getElementById("injuryDateField");
+      const injuryInput = document.getElementById("injuryDate");
+
+      if (reason === "Поранення (ВЛК)") {
+        injuryField.style.display = "block";
+        injuryInput.required = true;
+      } else {
+        injuryField.style.display = "none";
+        injuryInput.required = false;
+        injuryInput.value = "";
+      }
+    }
 
     function validateForm() {
       const form = document.getElementById("anketaForm");
@@ -204,8 +234,9 @@
     function buildMessage() {
       const getVal = (id) => document.getElementById(id).value.trim();
       const dobFormatted = formatDate(document.getElementById("dob").value);
+      const reason = getVal("reason");
 
-      return [
+      const lines = [
         "Звання: " + getVal("rank"),
         "ПІБ: " + getVal("pib"),
         "Дата народження: " + dobFormatted,
@@ -213,9 +244,17 @@
         "ІПН: " + getVal("ipn"),
         "Населені пункти (БД): " + getVal("locations"),
         "УБД (дата, №): " + getVal("ubd"),
-        "Коментар / причина отримання: " + getVal("comment"),
-        "Контактний телефон: " + getVal("contactPhone")
-      ].join("\n");
+        "Причина отримання: " + reason
+      ];
+
+      if (reason === "Поранення (ВЛК)") {
+        lines.push("Дата поранення: " + formatDate(document.getElementById("injuryDate").value));
+      }
+
+      lines.push("Коментар: " + getVal("comment"));
+      lines.push("Контактний телефон: " + getVal("contactPhone"));
+
+      return lines.join("\n");
     }
 
     function sendWhatsApp() {
